@@ -18,7 +18,6 @@ INSTALL_DIRECTORY="/opt/bitcoind"
 DATA_DIRECTORY="/var/lib/bitcoind"
 CONFIG_DIRECTORY="/etc/bitcoin"
 SERVICE_DIRECTORY="/usr/lib/systemd/system"
-RUN_DIRECTORY="/run/bitcoind"
 SHELL_ACCESS="/usr/sbin/nologin"
 SERVICE_NAME="bitcoind"
 
@@ -78,19 +77,14 @@ function create_dirs() {
         echo "Creating config directory: $CONFIG_DIRECTORY"
         mkdir $CONFIG_DIRECTORY
     fi
-
-    # Create run directory if needed
-    if [[ ! -d $RUN_DIRECTORY ]]; then
-        echo "Creating run directory: $RUN_DIRECTORY"
-        mkdir $RUN_DIRECTORY
-        chown $TARGET_USER:$TARGET_GROUP $RUN_DIRECTORY
-    fi
 }
 
 # Install binaries
 function download_and_install() {
+    pushd $INSTALL_DIRECTORY
+
     # Make sure the system is up to date
-    echo "Updating System .."
+    echo "Updating system dependencies .."
     apt-get update
     apt-get install -y --no-install-recommends ca-certificates dirmngr wget
 
@@ -118,15 +112,23 @@ function download_and_install() {
 
     # Update permissions
     echo "Updating permissions .."
+
+    # Install folder
     chown -R root:root $INSTALL_DIRECTORY
     chmod -R 0755 $INSTALL_DIRECTORY
 
+    # Data folder
+    chown -R $TARGET_USER:$TARGET_GROUP $DATA_DIRECTORY
+    chmod -R 0710 $DATA_DIRECTORY
+
+    # Config
+    chmod -R 0710 $CONFIG_DIRECTORY
+
     # Install executables in the local bin folder and symlink the daemon
     install -m 0755 -o root -g root -t /usr/local/bin $INSTALL_DIRECTORY/bin/*
-    if [[ -f /usr/bin/bitcoind ]]; then
-        rm /usr/bin/bitcoind
-    fi
     ln -sf /usr/local/bin/bitcoind /usr/bin/bitcoind
+
+    popd
 }
 
 # Service setup (conf and service files)
@@ -173,8 +175,7 @@ create_user
 create_dirs
 
 # Install
-pushd $INSTALL_DIRECTORY
 download_and_install
 setup_service
-echo "Installation COMPLETE! Start with 'systemctl start bitcoind'"
-popd
+
+echo "Bitcoin v$VERSION is now installed and ready to use!"

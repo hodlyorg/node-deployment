@@ -49,15 +49,15 @@ function sanity_checks() {
 # Create user (and group), if not present
 function create_user() {
     echo "Checking user and group .."
-    if [[ ! getent passwd $TARGET_USER ]]; then
-        if [[ ! getent group $TARGET_GROUP ]]; then
+    if [[ $(getent passwd $TARGET_USER) == "" ]]; then
+        if [[ $(getent group $TARGET_GROUP) == "" ]]; then
             echo "Creating user [$TARGET_USER] and group [$TARGET_GROUP] .."
             useradd -d $DATA_DIRECTORY -s $SHELL_ACCESS $TARGET_USER
         fi
     else
-        if [[ ! getent group $TARGET_GROUP ]]; then
-            echo "ERROR: User [$TARGET_USER] exists already, but the group [$TARGET_GROUP] cannot be found. Either remove the user or manually create the required group and associated with it"
-            exit
+        if [[ $(getent group $TARGET_GROUP) != "" ]]; then
+            groupadd $TARGET_GROUP
+            usermod -g $TARGET_GROUP $TARGET_USER
         else 
             echo "Target user and group exist already, nothing to do .."
         fi
@@ -178,4 +178,4 @@ create_dirs
 download_and_install
 setup_service
 
-echo "Bitcoin v$VERSION is now installed and ready to use!"
+echo "Bitcoin v$BITCOIN_VERSION is now installed and ready to use!"

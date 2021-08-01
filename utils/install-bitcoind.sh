@@ -48,10 +48,10 @@ function sanity_checks() {
 
 # Create user (and group), if not present
 function create_user() {
-    echo "Checking user and group .."
+    echo "Checking user and group ..."
     if [[ $(getent passwd $TARGET_USER) == "" ]]; then
         if [[ $(getent group $TARGET_GROUP) == "" ]]; then
-            echo "Creating user [$TARGET_USER] and group [$TARGET_GROUP] .."
+            echo "Creating user [$TARGET_USER] and group [$TARGET_GROUP] ..."
             useradd -d $DATA_DIRECTORY -s $SHELL_ACCESS $TARGET_USER
         fi
     else
@@ -59,7 +59,7 @@ function create_user() {
             groupadd $TARGET_GROUP
             usermod -g $TARGET_GROUP $TARGET_USER
         else 
-            echo "Target user and group exist already, nothing to do .."
+            echo "Target user and group exist already, nothing to do ..."
         fi
     fi
 }
@@ -84,34 +84,33 @@ function download_and_install() {
     pushd $INSTALL_DIRECTORY
 
     # Make sure the system is up to date
-    echo "Updating system dependencies .."
+    echo "Updating system dependencies ..."
     apt-get update
     apt-get install -y --no-install-recommends ca-certificates dirmngr wget
 
     # Download Tarball and Checksums
-    echo "Downloading release [$BITCOIN_VERSION] .."
+    echo "Downloading release [$BITCOIN_VERSION] ..."
     wget -qO $BITCOIN_TARBALL "$BITCOIN_URL"
     wget -qO bitcoin.asc "$BITCOIN_ASC_URL"
 
     # Extract the tarball's checksum from the released .asc and verify it
-    echo "Verifying release .."
+    echo "Verifying release ..."
     grep $BITCOIN_TARBALL bitcoin.asc | tee SHA256SUMS.asc
     sha256sum -c SHA256SUMS.asc
 
     # Extract
-    echo "Extracting binaries .."
+    echo "Extracting binaries ..."
     tar -xzvf $BITCOIN_TARBALL $BITCOIN_DIST_BINARIES_DIRECTORY/ --strip-components=1
 
     # Cleanup
-    echo "Cleaning up .."
+    echo "Cleaning up ..."
     rm $BITCOIN_TARBALL
     rm bitcoin.asc
     rm SHA256SUMS.asc
     rm $INSTALL_DIRECTORY/bin/bitcoin-qt
-    rm $INSTALL_DIRECTORY/bin/test_bitcoin
 
     # Update permissions
-    echo "Updating permissions .."
+    echo "Updating permissions ..."
 
     # Install folder
     chown -R root:root $INSTALL_DIRECTORY
@@ -123,6 +122,9 @@ function download_and_install() {
 
     # Config
     chmod -R 0710 $CONFIG_DIRECTORY
+
+    echo "Running tests ..."
+    $INSTALL_DIRECTORY/bin/test_bitcoin
 
     # Install executables in the local bin folder and symlink the daemon
     install -m 0755 -o root -g root -t /usr/local/bin $INSTALL_DIRECTORY/bin/*
@@ -148,7 +150,7 @@ function setup_service() {
 
     # Install default service unit if one is not present
     if [[ ! -f $SERVICE_DIRECTORY/bitcoind.service ]]; then
-        echo "Installing systemd service unit .."
+        echo "Installing systemd service unit ..."
         wget -qO bitcoind.service "$SERVICE_FILE_URL"
         if [[ ! -d $SERVICE_DIRECTORY ]]; then
             echo "Creating service directory: $SERVICE_DIRECTORY"
@@ -161,7 +163,7 @@ function setup_service() {
     fi
 
     # Enable installed service
-    echo "Enabling bitcoind service unit .."    
+    echo "Enabling bitcoind service unit ..."    
     systemctl enable bitcoind.service
 }
 

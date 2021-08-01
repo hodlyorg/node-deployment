@@ -1,12 +1,12 @@
 #!/bin/bash
-SOURCEDIR=$1
-DESTDIR=$2
-TOOL="rsync"
-TOOL_PARAMS="--ignore-existing --delete -hvrPt $SOURCEDIR $DESTDIR"
+BITCOIND_DATA_BACKUP_ROOT=$1
+BITCOIND_DATA_SOURCE_ROOT="/var/lib/bitcoind/"
+TOOL_PARAMS="--ignore-existing --delete -hvrPt $BITCOIND_DATA_SOURCE_ROOT $BITCOIND_DATA_BACKUP_ROOT"
 SERVICE_NAME="bitcoind"
+TOOL="rsync"
 
 # Check if required tooling is available
-if [[ ! command -v $TOOL &> /dev/null ]]; then
+if [[ $( command -v $TOOL ) == "" ]]; then
     echo "ERROR: A required command line tool is missing: $TOOL"
     exit
 fi
@@ -18,19 +18,31 @@ if [[ $( pidof $SERVICE_NAME ) -ne 0 ]]; then
 fi
 
 # Check source
-if [[ ! -d "$SOURCEDIR" ]];
+if [[ ! -d "$BITCOIND_DATA_SOURCE_ROOT" ]];
 then
-    echo "ERROR: Source path [$SOURCEDIR] must target an existing directory"
+    echo "ERROR: Source path [$BITCOIND_DATA_SOURCE_ROOT] must be an existing directory"
+    exit
+fi
+
+if [[ "$BITCOIND_DATA_SOURCE_ROOT" != */ ]];
+then 
+    echo "ERROR: Source path [$BITCOIND_DATA_SOURCE_ROOT] must target the contents of a directory (end with '/')"
     exit
 fi
 
 # Check destination
-if [[ ! -d "$DESTDIR" ]];
+if [[ ! -d "$BITCOIND_DATA_BACKUP_ROOT" ]];
 then
-    echo "ERROR: Destination path [$DESTDIR] must target an existing directory"
+    echo "ERROR: Destination path [$BITCOIND_DATA_BACKUP_ROOT] must be an existing directory"
+    exit
+fi
+
+if [[ "$BITCOIND_DATA_BACKUP_ROOT" != */ ]];
+then
+    echo "ERROR: Destination path [$BITCOIND_DATA_BACKUP_ROOT] must target the contents of a directory (end with '/')"
     exit
 fi
 
 # Initiate backup sync
-echo "Syncing contents from $SOURCEDIR to $DESTDIR"
+echo "Syncing contents from $BITCOIND_DATA_SOURCE_ROOT to $BITCOIND_DATA_BACKUP_ROOT"
 $TOOL $TOOL_PARAMS

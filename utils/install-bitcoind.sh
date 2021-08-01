@@ -26,7 +26,7 @@ SERVICE_FILE_URL="https://raw.githubusercontent.com/bitcoin/bitcoin/master/contr
 CONFIG_FILE_URL="https://raw.githubusercontent.com/bitcoin/bitcoin/master/share/examples/bitcoin.conf"
 
 # Enable pipefail
-set -euxo pipefail
+set -euo pipefail
 
 ###############################################################################
 # INTERNAL FUNCTIONS
@@ -41,8 +41,9 @@ function sanity_checks() {
     fi
 
     # Check if a "bitcoind" process is running
-    if [[ $( pidof $SERVICE_NAME ) != 0 ]]; then
+    if [[ $( pidof $SERVICE_NAME ) -ne 0 ]]; then
         echo "Bitcoind service currently running. You must stop it first"
+        exit
     fi
 }
 
@@ -55,7 +56,7 @@ function create_user() {
             useradd -d $DATA_DIRECTORY -s $SHELL_ACCESS $TARGET_USER
         fi
     else
-        if [[ $(getent group $TARGET_GROUP) != "" ]]; then
+        if [[ $(getent group $TARGET_GROUP) == "" ]]; then
             groupadd $TARGET_GROUP
             usermod -g $TARGET_GROUP $TARGET_USER
         else 

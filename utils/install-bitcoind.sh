@@ -89,6 +89,13 @@ function create_dirs() {
         echo "Creating config directory: ${CONFIG_DIRECTORY}"
         mkdir $CONFIG_DIRECTORY
     fi
+
+    ################################################
+    # Create service directory if needed
+    if [[ ! -d $SERVICE_DIRECTORY ]]; then
+        echo "Creating service directory: ${SERVICE_DIRECTORY}"
+        mkdir $SERVICE_DIRECTORY
+    fi
 }
 
 # Install binaries
@@ -151,6 +158,7 @@ function download_and_install() {
 
 # Service setup (conf and service files)
 function setup_service() {
+    ################################################
     # Install default config file if no file exists
     if [[ ! -f $CONFIG_DIRECTORY/bitcoind.conf ]]; then
         if [[ ! -d $CONFIG_DIRECTORY ]]; then
@@ -167,16 +175,12 @@ function setup_service() {
         chown -R root:$TARGET_GROUP $CONFIG_DIRECTORY
     fi
 
+    ################################################
     # Install default service unit if one is not present
     if [[ ! -f $SERVICE_DIRECTORY/bitcoind.service ]]; then
+        # Download and deploy service unit
         echo "Installing systemd service unit ..."
         wget -qO bitcoind.service "$SERVICE_FILE_URL"
-        if [[ ! -d $SERVICE_DIRECTORY ]]; then
-            echo "Creating service directory: ${SERVICE_DIRECTORY}"
-            mkdir $SERVICE_DIRECTORY
-        fi
-
-        # Copy and reload service unit
         mv bitcoind.service $SERVICE_DIRECTORY/
         systemctl daemon-reload
     fi

@@ -34,12 +34,14 @@ set -euo pipefail
 
 # Sanity checks
 function sanity_checks() {
+    ################################################
     # Check Execution privileges
     if [[ $EUID != 0 ]]; then
         echo "Please run as root"
         exit
     fi
 
+    ################################################
     # Check if a "bitcoind" process is running
     if [[ $( pidof $SERVICE_NAME ) -ne 0 ]]; then
         echo "Bitcoind service currently running. You must stop it first"
@@ -67,12 +69,21 @@ function create_user() {
 
 # Create required directories function
 function create_dirs() {
+    ################################################
     # Create install directory if needed
     if [[ ! -d $INSTALL_DIRECTORY ]]; then
         echo "Creating target directory: ${INSTALL_DIRECTORY}"
         mkdir $INSTALL_DIRECTORY
     fi
 
+    ################################################
+    # Create data directory if needed
+    if [[ ! -d $DATA_DIRECTORY ]]; then
+        echo "Creating target directory: ${DATA_DIRECTORY}"
+        mkdir $DATA_DIRECTORY
+    fi
+
+    ################################################
     # Create config directory if needed
     if [[ ! -d $CONFIG_DIRECTORY ]]; then
         echo "Creating config directory: ${CONFIG_DIRECTORY}"
@@ -84,25 +95,30 @@ function create_dirs() {
 function download_and_install() {
     pushd $INSTALL_DIRECTORY
 
+    ################################################
     # Make sure the system is up to date
     echo "Updating system dependencies ..."
     apt-get update
     apt-get install -y --no-install-recommends ca-certificates dirmngr wget
 
+    ################################################
     # Download Tarball and Checksums
     echo "Downloading release [${BITCOIN_VERSION}] ..."
     wget -qO $BITCOIN_TARBALL "$BITCOIN_URL"
     wget -qO bitcoin.asc "$BITCOIN_ASC_URL"
 
+    ################################################
     # Extract the tarball's checksum from the released .asc and verify it
     echo "Verifying release ..."
     grep $BITCOIN_TARBALL bitcoin.asc | tee SHA256SUMS.asc
     sha256sum -c SHA256SUMS.asc
 
+    ################################################
     # Extract
     echo "Extracting binaries ..."
     tar -xzvf $BITCOIN_TARBALL $BITCOIN_DIST_BINARIES_DIRECTORY/ --strip-components=1
 
+    ################################################
     # Cleanup
     echo "Cleaning up ..."
     rm $BITCOIN_TARBALL
@@ -110,24 +126,23 @@ function download_and_install() {
     rm SHA256SUMS.asc
     rm $INSTALL_DIRECTORY/bin/bitcoin-qt
 
+    ################################################
     # Update permissions
     echo "Updating permissions ..."
 
     # Install folder
     chown -R root:root $INSTALL_DIRECTORY
-    chmod -R 0755 $INSTALL_DIRECTORY
+    chmod -R 0710 $INSTALL_DIRECTORY
 
     # Data folder
     chown -R $TARGET_USER:$TARGET_GROUP $DATA_DIRECTORY
     chmod -R 0710 $DATA_DIRECTORY
 
-    # Config
-    chmod -R 0710 $CONFIG_DIRECTORY
-
     # Run tests
     $INSTALL_DIRECTORY/bin/test_bitcoin
 
-    # Install executables in the local bin folder and symlink the daemon
+    ################################################
+    # Install executables
     install -m 0755 -o root -g root -t /usr/local/bin $INSTALL_DIRECTORY/bin/*
     ln -sf /usr/local/bin/bitcoind /usr/bin/bitcoind
 
@@ -137,16 +152,19 @@ function download_and_install() {
 # Service setup (conf and service files)
 function setup_service() {
     # Install default config file if no file exists
-    if [[ ! -f $CONFIG_DIRECTORY/bitcoin.conf ]]; then
-        echo "Installing default config"
-        wget -qO bitcoin.conf "$CONFIG_FILE_URL"
+    if [[ ! -f $CONFIG_DIRECTORY/bitcoind.conf ]]; then
         if [[ ! -d $CONFIG_DIRECTORY ]]; then
             echo "Creating config directory: ${CONFIG_DIRECTORY}"
             mkdir $CONFIG_DIRECTORY
         fi
 
         # Deploy default config
-        mv bitcoin.conf $CONFIG_DIRECTORY/
+        echo "Installing default config"
+        wget -qO bitcoind.conf "$CONFIG_FILE_URL"
+        mv bitcoind.conf $CONFIG_DIRECTORY/bitcoind.conf
+        chmod 0710 $CONFIG_DIRECTORY
+        chmod 0640 $CONFIG_DIRECTORY/bitcoind.conf
+        chown -R root:$TARGET_GROUP $CONFIG_DIRECTORY
     fi
 
     # Install default service unit if one is not present
@@ -162,10 +180,6 @@ function setup_service() {
         mv bitcoind.service $SERVICE_DIRECTORY/
         systemctl daemon-reload
     fi
-
-    # Enable installed service
-    echo "Enabling bitcoind service unit ..."    
-    systemctl enable bitcoind.service
 }
 
 ###############################################################################

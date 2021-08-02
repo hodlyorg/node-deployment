@@ -7,9 +7,9 @@
 # Target version
 BITCOIN_VERSION="0.21.1"
 BITCOIN_TARBALL="bitcoin-${BITCOIN_VERSION}-x86_64-linux-gnu.tar.gz"
-BITCOIN_URL="https://bitcoincore.org/bin/bitcoin-core-$BITCOIN_VERSION/$BITCOIN_TARBALL"
-BITCOIN_ASC_URL="https://bitcoincore.org/bin/bitcoin-core-$BITCOIN_VERSION/SHA256SUMS.asc"
-BITCOIN_DIST_BINARIES_DIRECTORY="bitcoin-$BITCOIN_VERSION/bin"
+BITCOIN_URL="https://bitcoincore.org/bin/bitcoin-core-${BITCOIN_VERSION}/${BITCOIN_TARBALL}"
+BITCOIN_ASC_URL="https://bitcoincore.org/bin/bitcoin-core-${BITCOIN_VERSION}/SHA256SUMS.asc"
+BITCOIN_DIST_BINARIES_DIRECTORY="bitcoin-${BITCOIN_VERSION}/bin"
 
 # Install options
 TARGET_USER="bitcoin"
@@ -52,7 +52,7 @@ function create_user() {
     echo "Checking user and group ..."
     if [[ $(getent passwd $TARGET_USER) == "" ]]; then
         if [[ $(getent group $TARGET_GROUP) == "" ]]; then
-            echo "Creating user [$TARGET_USER] and group [$TARGET_GROUP] ..."
+            echo "Creating user [${TARGET_USER}] and group [${TARGET_GROUP}] ..."
             useradd -d $DATA_DIRECTORY -s $SHELL_ACCESS $TARGET_USER
         fi
     else
@@ -69,13 +69,13 @@ function create_user() {
 function create_dirs() {
     # Create install directory if needed
     if [[ ! -d $INSTALL_DIRECTORY ]]; then
-        echo "Creating target directory: $INSTALL_DIRECTORY"
+        echo "Creating target directory: ${INSTALL_DIRECTORY}"
         mkdir $INSTALL_DIRECTORY
     fi
 
     # Create config directory if needed
     if [[ ! -d $CONFIG_DIRECTORY ]]; then
-        echo "Creating config directory: $CONFIG_DIRECTORY"
+        echo "Creating config directory: ${CONFIG_DIRECTORY}"
         mkdir $CONFIG_DIRECTORY
     fi
 }
@@ -90,7 +90,7 @@ function download_and_install() {
     apt-get install -y --no-install-recommends ca-certificates dirmngr wget
 
     # Download Tarball and Checksums
-    echo "Downloading release [$BITCOIN_VERSION] ..."
+    echo "Downloading release [${BITCOIN_VERSION}] ..."
     wget -qO $BITCOIN_TARBALL "$BITCOIN_URL"
     wget -qO bitcoin.asc "$BITCOIN_ASC_URL"
 
@@ -124,7 +124,7 @@ function download_and_install() {
     # Config
     chmod -R 0710 $CONFIG_DIRECTORY
 
-    echo "Running tests ..."
+    # Run tests
     $INSTALL_DIRECTORY/bin/test_bitcoin
 
     # Install executables in the local bin folder and symlink the daemon
@@ -141,7 +141,7 @@ function setup_service() {
         echo "Installing default config"
         wget -qO bitcoin.conf "$CONFIG_FILE_URL"
         if [[ ! -d $CONFIG_DIRECTORY ]]; then
-            echo "Creating config directory: $CONFIG_DIRECTORY"
+            echo "Creating config directory: ${CONFIG_DIRECTORY}"
             mkdir $CONFIG_DIRECTORY
         fi
 
@@ -154,7 +154,7 @@ function setup_service() {
         echo "Installing systemd service unit ..."
         wget -qO bitcoind.service "$SERVICE_FILE_URL"
         if [[ ! -d $SERVICE_DIRECTORY ]]; then
-            echo "Creating service directory: $SERVICE_DIRECTORY"
+            echo "Creating service directory: ${SERVICE_DIRECTORY}"
             mkdir $SERVICE_DIRECTORY
         fi
 
@@ -181,4 +181,4 @@ create_dirs
 download_and_install
 setup_service
 
-echo "Bitcoin v$BITCOIN_VERSION is now installed and ready to use!"
+echo "Bitcoin v${BITCOIN_VERSION} is now installed and ready to use!"

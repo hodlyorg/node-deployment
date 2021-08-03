@@ -20,7 +20,7 @@ SHELL_ACCESS="/usr/sbin/nologin"
 SERVICE_NAME="lightningd"
 
 # Resources
-SERVICE_FILE_URL="https://raw.githubusercontent.com/ElementsProject/lightning/master/contrib/init/lightningd.service"
+SERVICE_FILE_URL="https://raw.githubusercontent.com/hodlyorg/node-deployment/main/systemd/lightningd.service"
 
 # Enable pipefail
 set -euo pipefail

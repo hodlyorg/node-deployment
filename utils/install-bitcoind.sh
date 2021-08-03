@@ -22,8 +22,8 @@ SHELL_ACCESS="/usr/sbin/nologin"
 SERVICE_NAME="bitcoind"
 
 # Resources
-SERVICE_FILE_URL="https://raw.githubusercontent.com/bitcoin/bitcoin/master/contrib/init/bitcoind.service"
-CONFIG_FILE_URL="https://raw.githubusercontent.com/bitcoin/bitcoin/master/share/examples/bitcoin.conf"
+SERVICE_FILE_URL="https://raw.githubusercontent.com/hodlyorg/node-deployment/main/systemd/bitcoind.service"
+CONFIG_FILE_URL="https://raw.githubusercontent.com/hodlyorg/node-deployment/main/conf/bitcoin.conf"
 
 # Enable pipefail
 set -euo pipefail

@@ -3,7 +3,7 @@ BITCOIND_DATA_BACKUP_ROOT=$1
 BITCOIND_DATA_SOURCE_ROOT="/var/lib/bitcoind/"
 SERVICE_NAME="bitcoind"
 TOOL="rsync"
-TOOL_PARAMS="--ignore-existing --delete -hvrPt $BITCOIND_DATA_SOURCE_ROOT $BITCOIND_DATA_BACKUP_ROOT"
+TOOL_PARAMS="-avh --delete --progress $BITCOIND_DATA_SOURCE_ROOT $BITCOIND_DATA_BACKUP_ROOT"
 
 # Check if required tooling is available
 if [[ $( command -v $TOOL ) == "" ]]; then

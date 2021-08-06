@@ -117,7 +117,7 @@ function download_and_install() {
     # Make sure the system is up to date
     echo "Updating system dependencies ..."
     apt-get update
-    apt-get install -y --no-install-recommends ca-certificates libpq5 wget
+    apt-get install -y --no-install-recommends ca-certificates wget libpq5 postgresql postgresql-contrib
 
     ################################################
     # Download Tarball and Checksums

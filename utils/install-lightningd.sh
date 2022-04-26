@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Target version
-LIGHTNINGD_VERSION="v0.10.0"
+LIGHTNINGD_VERSION="v0.10.2"
 LIGHTNINGD_TARBALL="clightning-${LIGHTNINGD_VERSION}-Ubuntu-20.04.tar.xz"
 LIGHTNINGD_URL="https://github.com/ElementsProject/lightning/releases/download/${LIGHTNINGD_VERSION}/${LIGHTNINGD_TARBALL}"
 LIGHTNINGD_ASC_URL="https://github.com/ElementsProject/lightning/releases/download/${LIGHTNINGD_VERSION}/SHA256SUMS"

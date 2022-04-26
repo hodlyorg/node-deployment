@@ -5,7 +5,7 @@
 ###############################################################################
 
 # Target version
-BITCOIN_VERSION="0.23.0"
+BITCOIN_VERSION="23.0"
 BITCOIN_TARBALL="bitcoin-${BITCOIN_VERSION}-x86_64-linux-gnu.tar.gz"
 BITCOIN_URL="https://bitcoincore.org/bin/bitcoin-core-${BITCOIN_VERSION}/${BITCOIN_TARBALL}"
 BITCOIN_ASC_URL="https://bitcoincore.org/bin/bitcoin-core-${BITCOIN_VERSION}/SHA256SUMS.asc"
